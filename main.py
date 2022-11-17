@@ -1,4 +1,3 @@
-import asyncio
 import sys
 import threading
 import pygame
@@ -17,15 +16,24 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix='/', intents=intents)
     
+def runBot():
+    bot.run(key)
+    
 # --- PYGAME PART ---
 
 class Enemy:
     currentLife = 0
     maxLife = 0
-    enemySprite = None
-    enemyRect = None
-    enemyPosition = None
+    def __init__(self, window) -> None:
+        # self.maxLife = int(input("Max enemy life: "))
+        self.maxLife = 100
+        self.currentLife = self.maxLife
+        # self.enemySprite = pygame.image.load(input("Relative path to enemy sprite: "))
+        self.enemySprite = pygame.image.load("pezerus.png")
+        self.enemyRect = self.enemySprite.get_rect()
+        self.enemyPosition = width, height = 80, (window.windowSize[1]/2 - self.enemyRect.height/2)
 
+    
 class WindowProperties:
     windowSize = width, height = 1920, 1080
     windowWidth = windowSize[0]
@@ -35,71 +43,55 @@ class WindowProperties:
     screen = None
     
     def __init__(self) -> None:
+        # self.background = pygame.image.load(input("Relative path to background: "))
+        self.background = pygame.image.load("bg.jpg")
         self.screen = pygame.display.set_mode(self.windowSize)
-
-DefaultEnemy = Enemy()
-
-Window = WindowProperties()
 
 pygame.init()
 
-def renderFight(enemy, window):
+Window = WindowProperties()
+
+DefaultEnemy = Enemy(Window)
+
+    
+
+def subtractLife(currentLife, damage):
+    currentLife = currentLife - damage
+    print(currentLife)
+    return currentLife
+
+@bot.event
+async def on_ready():
+    print('Bot is ready!')
+            
+@bot.command(name="damage", help = "Damages the enemy.")
+async def damage(ctx, arg):
+    DefaultEnemy.currentLife = DefaultEnemy.currentLife - int(arg)
+    await ctx.send("Enemy's current life is: " + str(DefaultEnemy.currentLife))
+    
+threading.Thread(target=runBot, daemon=True).start()
+    
+while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
                 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_0:
-                enemy.currentLife = subtractLife(enemy.currentLife, 1)
-                print(enemy.currentLife/enemy.maxLife)
+                DefaultEnemy.currentLife = subtractLife(DefaultEnemy.currentLife, 1)
+                print(DefaultEnemy.currentLife/DefaultEnemy.maxLife)
             if event.key == pygame.K_ESCAPE:
                 sys.exit()
             
-        window.screen.blit(window.background, (0, 0))
+        Window.screen.blit(Window.background, (0, 0))
             
         # Draw our enemy
-        window.screen.blit(enemy.enemySprite, enemy.enemyPosition, enemy.enemyRect)
+        Window.screen.blit(DefaultEnemy.enemySprite, DefaultEnemy.enemyPosition, DefaultEnemy.enemyRect)
             
             # draw our enemy's health bar
         healthBG = 40, 40, 40
         healthFG = 155, 0, 0
-        pygame.draw.rect(window.screen, healthBG, (window.healthSizeRatio/2 + enemy.enemyRect.width/1.5, (window.windowSize[1]/2 - 48), window.healthSizeRatio, window.healthSizeRatio/7.5))
-        pygame.draw.rect(window.screen, healthFG, (window.healthSizeRatio/2 + enemy.enemyRect.width/1.5 + window.healthSizeRatio/60, (window.windowSize[1]/2 - window.healthSizeRatio/20), (enemy.currentLife/enemy.maxLife) * (window.healthSizeRatio - window.healthSizeRatio/30), 72))
+        pygame.draw.rect(Window.screen, healthBG, (Window.healthSizeRatio/2 + DefaultEnemy.enemyRect.width/1.5, (Window.windowSize[1]/2 - 48), Window.healthSizeRatio, Window.healthSizeRatio/7.5))
+        pygame.draw.rect(Window.screen, healthFG, (Window.healthSizeRatio/2 + DefaultEnemy.enemyRect.width/1.5 + Window.healthSizeRatio/60, (Window.windowSize[1]/2 - Window.healthSizeRatio/20), (DefaultEnemy.currentLife/DefaultEnemy.maxLife) * (Window.healthSizeRatio - Window.healthSizeRatio/30), 72))
             
         pygame.display.flip()
-
-def subtractLife(currentLife, damage):
-    currentLife = currentLife - damage
-    print(currentLife)
-    return currentLife  
-
-@bot.event
-async def on_ready():
-    print('Bot is ready!')
-
-@bot.command(name = "start", help = "Starts the bot on the server")
-async def starter(ctx):
-    loop = bot.loop
-    
-    DefaultEnemy.maxLife = int(input("Type max amount of enemy life: "))
-
-    DefaultEnemy.currentLife = DefaultEnemy.maxLife
-
-    # Set of variables for enemy object
-    # enemySprite = pygame.image.load("intro_ball.gif")
-    DefaultEnemy.enemySprite = pygame.image.load(input("Type relative path to enemy sprite: "))
-    DefaultEnemy.enemyRect = DefaultEnemy.enemySprite.get_rect()
-    DefaultEnemy.enemyPosition = width, height = 80, (Window.windowSize[1]/2 - DefaultEnemy.enemyRect.height/2)
-
-    Window.background = pygame.image.load(input("Type relative path to background: "))
-    renderFight(DefaultEnemy, Window)
-
-    
-            
-@bot.command(name="damage", help = "Damages the enemy.")
-async def damage(ctx, arg):
-    DefaultEnemy.currentLife = DefaultEnemy.currentLife - int(arg)
-    renderFight(DefaultEnemy, Window)
-    await ctx.send("Enemy's current life is: " + str(DefaultEnemy.currentLife))
-
-bot.run(key)
