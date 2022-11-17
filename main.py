@@ -39,8 +39,6 @@ def runBot():
 # --- PYGAME PART ---
 
 class Enemy:
-    currentLife = 0
-    maxLife = 0
     def __init__(self, window) -> None:
         self.maxLife = int(input("Max enemy life: "))
         self.currentLife = self.maxLife
@@ -54,8 +52,6 @@ class WindowProperties:
     windowWidth = windowSize[0]
     windowHeight = windowSize[1]
     healthSizeRatio = 720
-    background = None
-    screen = None
     
     def __init__(self) -> None:
         self.background = pygame.image.load(input("Relative path to background: "))
