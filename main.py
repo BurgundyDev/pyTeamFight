@@ -20,7 +20,7 @@ currentLife = maxLife
 
 lifeFont = pygame.font.SysFont("Verdana", 50, False, False)
 
-black = 0, 0, 0
+black = 0, 0, 0, 155
 
 # Set of variables for enemy object
 # enemySprite = pygame.image.load("intro_ball.gif")
@@ -37,6 +37,7 @@ while currentLife > 0:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_0:
                 currentLife = subtractLife(currentLife, 1)
+                print(currentLife/maxLife)
             if event.key == pygame.K_ESCAPE:
                 sys.exit()
     
@@ -48,7 +49,7 @@ while currentLife > 0:
     # draw our enemy's health bar
     healthBG = 40, 40, 40
     healthFG = 255, 0, 120
-    pygame.draw.rect(screen, healthBG, (400+enemyRect.width, (windowSize[1]/2 - 40), maxLife * 6, 80))
-    pygame.draw.rect(screen, healthFG, (400+enemyRect.width + maxLife * 0.1, (windowSize[1]/2 - 30), currentLife * 5.8, 60))
+    pygame.draw.rect(screen, healthBG, (400+enemyRect.width, (windowSize[1]/2 - 40), 600, 80))
+    pygame.draw.rect(screen, healthFG, (400+enemyRect.width + 10, (windowSize[1]/2 - 30), (currentLife/maxLife) * 580, 60))
     
     pygame.display.flip()
