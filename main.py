@@ -9,13 +9,29 @@ print("Hello!")
 
 # --- DISCORD BOT ---
 
-keyFile = open("key.txt", "r")
-key = keyFile.read()
+guildFile = open("guild.txt", "r")
+guild_ID = guildFile.read()
+guild = discord.Object(id=guild_ID)
 
 intents = discord.Intents.default()
 intents.message_content = True
+class TFClient(discord.Client):
+    def __init__(self) -> None:
+        super().__init__(intents=intents)
+        self.synced = False;
+        
+    async def on_ready(self):
+        await self.wait_until_ready()
+        if not self.synced:
+            await tree.sync(guild = guild)
+            self.synced = True
+        print(f"We have logged in as {self.user}")
 
-bot = commands.Bot(command_prefix='/', intents=intents)
+keyFile = open("key.txt", "r")
+key = keyFile.read()
+
+bot = TFClient()
+tree = app_commands.CommandTree(bot)
     
 def runBot():
     bot.run(key)
@@ -26,11 +42,9 @@ class Enemy:
     currentLife = 0
     maxLife = 0
     def __init__(self, window) -> None:
-        # self.maxLife = int(input("Max enemy life: "))
-        self.maxLife = 100
+        self.maxLife = int(input("Max enemy life: "))
         self.currentLife = self.maxLife
-        # self.enemySprite = pygame.image.load(input("Relative path to enemy sprite: "))
-        self.enemySprite = pygame.image.load("pezerus.png")
+        self.enemySprite = pygame.image.load(input("Relative path to enemy sprite: "))
         self.enemyRect = self.enemySprite.get_rect()
         self.enemyPosition = width, height = 80, (window.windowSize[1]/2 - self.enemyRect.height/2)
 
@@ -44,8 +58,7 @@ class WindowProperties:
     screen = None
     
     def __init__(self) -> None:
-        # self.background = pygame.image.load(input("Relative path to background: "))
-        self.background = pygame.image.load("bg.jpg")
+        self.background = pygame.image.load(input("Relative path to background: "))
         self.screen = pygame.display.set_mode(self.windowSize)
 
 pygame.init()
@@ -54,27 +67,21 @@ Window = WindowProperties()
 
 DefaultEnemy = Enemy(Window)
 
-    
-
 def subtractLife(currentLife, damage):
     currentLife = currentLife - damage
     print(currentLife)
     return currentLife
-
-@bot.event
-async def on_ready():
-    print('Bot is ready!')
-            
-@bot.command(name="dmg", help = "Damages the enemy.")
-async def dmg(ctx, arg):
-    DefaultEnemy.currentLife = DefaultEnemy.currentLife - int(arg)
-    await ctx.send("Enemy's current life is: " + str(DefaultEnemy.currentLife))
     
-@bot.command(name="restart", help = "Restarts the game at a given point")
-async def restart(ctx, currentLife, maxLife):
-    DefaultEnemy.currentLife = currentLife
-    DefaultEnemy.maxLife = maxLife
-    await ctx.send("Restarted game with given parameters.")
+@tree.command(name = "dmg", description= "Damage the enemy", guild = guild)
+async def dmg(interaction: discord.Interaction, damage: int):
+    DefaultEnemy.currentLife = DefaultEnemy.currentLife - damage
+    await interaction.response.send_message(f"{damage} damage has been dealt to the enemy.")
+
+@tree.command(name = "restart", description= "Restart the game given a set of parameters.", guild = guild)
+async def restart(interaction: discord.Interaction, current_life: int, max_life: int):
+    DefaultEnemy.maxLife = max_life
+    DefaultEnemy.currentLife = current_life
+    await interaction.response.send_message("Restarted game with given parameters")
     
 threading.Thread(target=runBot, daemon=True).start()
     
