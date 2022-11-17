@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Images used to test so they don't get pushed in anymore
+**.png
+**.jpg
+**.jpeg
+**.gif
