@@ -13,7 +13,8 @@ pygame.init()
 windowSize = width, height = 1280, 720
 
 currentLife = 0
-maxLife = 100
+# maxLife = 100
+maxLife = int(input("Type max amount of enemy life: "))
 
 currentLife = maxLife
 
@@ -22,7 +23,8 @@ lifeFont = pygame.font.SysFont("Verdana", 50, False, False)
 black = 0, 0, 0
 
 # Set of variables for enemy object
-enemySprite = pygame.image.load("intro_ball.gif")
+# enemySprite = pygame.image.load("intro_ball.gif")
+enemySprite = pygame.image.load(input("Type relative path to enemy sprite: "))
 enemyRect = enemySprite.get_rect()
 enemyPosition = width, height = 200, (windowSize[1]/2 - enemyRect.height/2)
 
