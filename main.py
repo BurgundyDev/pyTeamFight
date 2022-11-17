@@ -2,6 +2,7 @@ import sys
 import threading
 import pygame
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 print("Hello!")
@@ -64,10 +65,16 @@ def subtractLife(currentLife, damage):
 async def on_ready():
     print('Bot is ready!')
             
-@bot.command(name="damage", help = "Damages the enemy.")
-async def damage(ctx, arg):
+@bot.command(name="dmg", help = "Damages the enemy.")
+async def dmg(ctx, arg):
     DefaultEnemy.currentLife = DefaultEnemy.currentLife - int(arg)
     await ctx.send("Enemy's current life is: " + str(DefaultEnemy.currentLife))
+    
+@bot.command(name="restart", help = "Restarts the game at a given point")
+async def restart(ctx, currentLife, maxLife):
+    DefaultEnemy.currentLife = currentLife
+    DefaultEnemy.maxLife = maxLife
+    await ctx.send("Restarted game with given parameters.")
     
 threading.Thread(target=runBot, daemon=True).start()
     
