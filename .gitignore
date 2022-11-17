@@ -133,3 +133,6 @@ dmypy.json
 **.jpg
 **.jpeg
 **.gif
+
+# File in which to store a discord bot token
+key.txt

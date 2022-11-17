@@ -1,55 +1,79 @@
 import sys
+import threading
 import pygame
 import discord
 
 print("Hello!")
+
+# --- DISCORD BOT ---
+
+keyFile = open("key.txt", "r")
+key = keyFile.read()
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
+    
+# --- PYGAME PART ---
 
 def subtractLife(currentLife, damage):
     currentLife = currentLife - damage
     print(currentLife)
     return currentLife  
 
-pygame.init()
-windowSize = width, height = 1280, 720
+@client.event
+async def on_ready():
+    pygame.init()
+    windowSize = width, height = 1920, 1080
+    windowWidth = windowSize[0]
+    windowHeight = windowSize[1]
 
-currentLife = 0
-# maxLife = 100
-maxLife = int(input("Type max amount of enemy life: "))
+    healthSizeRatio = 720
 
-currentLife = maxLife
+    currentLife = 0
+    maxLife = int(input("Type max amount of enemy life: "))
 
-lifeFont = pygame.font.SysFont("Verdana", 50, False, False)
+    currentLife = maxLife
 
-black = 0, 0, 0, 155
+    lifeFont = pygame.font.SysFont("Verdana", 50, False, False)
 
-# Set of variables for enemy object
-# enemySprite = pygame.image.load("intro_ball.gif")
-enemySprite = pygame.image.load(input("Type relative path to enemy sprite: "))
-enemyRect = enemySprite.get_rect()
-enemyPosition = width, height = 200, (windowSize[1]/2 - enemyRect.height/2)
+    black = 0, 0, 0
 
-screen = pygame.display.set_mode(windowSize)
+    # Set of variables for enemy object
+    # enemySprite = pygame.image.load("intro_ball.gif")
+    enemySprite = pygame.image.load(input("Type relative path to enemy sprite: "))
+    enemyRect = enemySprite.get_rect()
+    enemyPosition = width, height = 80, (windowSize[1]/2 - enemyRect.height/2)
 
-while currentLife > 0:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: sys.exit()
-        
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_0:
-                currentLife = subtractLife(currentLife, 1)
-                print(currentLife/maxLife)
-            if event.key == pygame.K_ESCAPE:
-                sys.exit()
+    background = pygame.image.load(input("Type relative path to background: "))
+
+    screen = pygame.display.set_mode(windowSize)
     
-    screen.fill(black)
-    
-    # Draw our enemy
-    screen.blit(enemySprite, enemyPosition, enemyRect)
-    
-    # draw our enemy's health bar
-    healthBG = 40, 40, 40
-    healthFG = 255, 0, 120
-    pygame.draw.rect(screen, healthBG, (400+enemyRect.width, (windowSize[1]/2 - 40), 600, 80))
-    pygame.draw.rect(screen, healthFG, (400+enemyRect.width + 10, (windowSize[1]/2 - 30), (currentLife/maxLife) * 580, 60))
-    
-    pygame.display.flip()
+    while currentLife > 0:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_0:
+                        currentLife = subtractLife(currentLife, 1)
+                        print(currentLife/maxLife)
+                    if event.key == pygame.K_ESCAPE:
+                        sys.exit()
+            
+            screen.fill(black)
+            screen.blit(background, (0, 0))
+            
+            # Draw our enemy
+            screen.blit(enemySprite, enemyPosition, enemyRect)
+            
+            # draw our enemy's health bar
+            healthBG = 40, 40, 40
+            healthFG = 155, 0, 0
+            pygame.draw.rect(screen, healthBG, (healthSizeRatio/2 + enemyRect.width/1.5, (windowSize[1]/2 - 48), healthSizeRatio, healthSizeRatio/7.5))
+            pygame.draw.rect(screen, healthFG, (healthSizeRatio/2 + enemyRect.width/1.5 + healthSizeRatio/60, (windowSize[1]/2 - healthSizeRatio/20), (currentLife/maxLife) * (healthSizeRatio - healthSizeRatio/30), 72))
+            
+            pygame.display.flip()
+            
+client.run(key)
