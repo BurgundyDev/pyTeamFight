@@ -1,7 +1,9 @@
+import asyncio
 import sys
 import threading
 import pygame
 import discord
+from discord.ext import commands
 
 print("Hello!")
 
@@ -13,67 +15,91 @@ key = keyFile.read()
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix='/', intents=intents)
     
 # --- PYGAME PART ---
+
+class Enemy:
+    currentLife = 0
+    maxLife = 0
+    enemySprite = None
+    enemyRect = None
+    enemyPosition = None
+
+class WindowProperties:
+    windowSize = width, height = 1920, 1080
+    windowWidth = windowSize[0]
+    windowHeight = windowSize[1]
+    healthSizeRatio = 720
+    background = None
+    screen = None
+    
+    def __init__(self) -> None:
+        self.screen = pygame.display.set_mode(self.windowSize)
+
+DefaultEnemy = Enemy()
+
+Window = WindowProperties()
+
+pygame.init()
+
+def renderFight(enemy, window):
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit()
+                
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_0:
+                enemy.currentLife = subtractLife(enemy.currentLife, 1)
+                print(enemy.currentLife/enemy.maxLife)
+            if event.key == pygame.K_ESCAPE:
+                sys.exit()
+            
+        window.screen.blit(window.background, (0, 0))
+            
+        # Draw our enemy
+        window.screen.blit(enemy.enemySprite, enemy.enemyPosition, enemy.enemyRect)
+            
+            # draw our enemy's health bar
+        healthBG = 40, 40, 40
+        healthFG = 155, 0, 0
+        pygame.draw.rect(window.screen, healthBG, (window.healthSizeRatio/2 + enemy.enemyRect.width/1.5, (window.windowSize[1]/2 - 48), window.healthSizeRatio, window.healthSizeRatio/7.5))
+        pygame.draw.rect(window.screen, healthFG, (window.healthSizeRatio/2 + enemy.enemyRect.width/1.5 + window.healthSizeRatio/60, (window.windowSize[1]/2 - window.healthSizeRatio/20), (enemy.currentLife/enemy.maxLife) * (window.healthSizeRatio - window.healthSizeRatio/30), 72))
+            
+        pygame.display.flip()
 
 def subtractLife(currentLife, damage):
     currentLife = currentLife - damage
     print(currentLife)
     return currentLife  
 
-@client.event
+@bot.event
 async def on_ready():
-    pygame.init()
-    windowSize = width, height = 1920, 1080
-    windowWidth = windowSize[0]
-    windowHeight = windowSize[1]
+    print('Bot is ready!')
 
-    healthSizeRatio = 720
+@bot.command(name = "start", help = "Starts the bot on the server")
+async def starter(ctx):
+    loop = bot.loop
+    
+    DefaultEnemy.maxLife = int(input("Type max amount of enemy life: "))
 
-    currentLife = 0
-    maxLife = int(input("Type max amount of enemy life: "))
-
-    currentLife = maxLife
-
-    lifeFont = pygame.font.SysFont("Verdana", 50, False, False)
-
-    black = 0, 0, 0
+    DefaultEnemy.currentLife = DefaultEnemy.maxLife
 
     # Set of variables for enemy object
     # enemySprite = pygame.image.load("intro_ball.gif")
-    enemySprite = pygame.image.load(input("Type relative path to enemy sprite: "))
-    enemyRect = enemySprite.get_rect()
-    enemyPosition = width, height = 80, (windowSize[1]/2 - enemyRect.height/2)
+    DefaultEnemy.enemySprite = pygame.image.load(input("Type relative path to enemy sprite: "))
+    DefaultEnemy.enemyRect = DefaultEnemy.enemySprite.get_rect()
+    DefaultEnemy.enemyPosition = width, height = 80, (Window.windowSize[1]/2 - DefaultEnemy.enemyRect.height/2)
 
-    background = pygame.image.load(input("Type relative path to background: "))
+    Window.background = pygame.image.load(input("Type relative path to background: "))
+    renderFight(DefaultEnemy, Window)
 
-    screen = pygame.display.set_mode(windowSize)
     
-    while currentLife > 0:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_0:
-                        currentLife = subtractLife(currentLife, 1)
-                        print(currentLife/maxLife)
-                    if event.key == pygame.K_ESCAPE:
-                        sys.exit()
             
-            screen.fill(black)
-            screen.blit(background, (0, 0))
-            
-            # Draw our enemy
-            screen.blit(enemySprite, enemyPosition, enemyRect)
-            
-            # draw our enemy's health bar
-            healthBG = 40, 40, 40
-            healthFG = 155, 0, 0
-            pygame.draw.rect(screen, healthBG, (healthSizeRatio/2 + enemyRect.width/1.5, (windowSize[1]/2 - 48), healthSizeRatio, healthSizeRatio/7.5))
-            pygame.draw.rect(screen, healthFG, (healthSizeRatio/2 + enemyRect.width/1.5 + healthSizeRatio/60, (windowSize[1]/2 - healthSizeRatio/20), (currentLife/maxLife) * (healthSizeRatio - healthSizeRatio/30), 72))
-            
-            pygame.display.flip()
-            
-client.run(key)
+@bot.command(name="damage", help = "Damages the enemy.")
+async def damage(ctx, arg):
+    DefaultEnemy.currentLife = DefaultEnemy.currentLife - int(arg)
+    renderFight(DefaultEnemy, Window)
+    await ctx.send("Enemy's current life is: " + str(DefaultEnemy.currentLife))
+
+bot.run(key)
