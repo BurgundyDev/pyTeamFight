@@ -41,13 +41,11 @@ def runBot():
 class Enemy:
     def __init__(self, window) -> None:
         self.maxLife = int(input("Max enemy life: "))
-        self.maxLife = 2000
         self.currentLife = self.maxLife
         self.enemySprite = pygame.image.load(input("Relative path to enemy sprite: "))
-        self.enemySprite = pygame.image.load("pezerus.png")
         self.title = input("Enemy name: ")
         self.enemyRect = self.enemySprite.get_rect()
-        self.enemyPosition = width, height = Window.windowWidth/2 - self.enemyRect.width/2, window.windowSize[1]/2 - self.enemyRect.height/2 + 180
+        self.enemyPosition = width, height = Window.windowWidth/2 - self.enemyRect.width/2, window.windowSize[1]/2 - self.enemyRect.height/2 + 160
 
     
 class WindowProperties:
@@ -66,7 +64,7 @@ Window = WindowProperties()
 
 DefaultEnemy = Enemy(Window)
 
-title_font = pygame.font.Font(input("Relative path to font: "), 128)
+title_font = pygame.font.Font(input("Relative path to font: "), 96)
 title = title_font.render(DefaultEnemy.title, True, (255, 255, 255))
 
 def subtractLife(currentLife, damage):
@@ -104,11 +102,14 @@ while (DefaultEnemy.currentLife>0):
         # Draw our enemy
         Window.screen.blit(DefaultEnemy.enemySprite, DefaultEnemy.enemyPosition, DefaultEnemy.enemyRect)
         Window.screen.blit(title, (Window.windowWidth/2 - title.get_rect().width/2, 40))
-            
-            # draw our enemy's health bar
-        healthBG = 120, 120, 120
-        healthFG = 188, 0, 0
-        pygame.draw.rect(Window.screen, healthBG, (80, 220, Window.windowWidth - 160, 96))
-        pygame.draw.rect(Window.screen, healthFG, (92, 232, (DefaultEnemy.currentLife/DefaultEnemy.maxLife) * (Window.windowWidth - 184), 72))
+        
+        empty_bar = pygame.image.load("bar_empty.png")
+        empty_bar_rect = empty_bar.get_rect()
+        Window.screen.blit(empty_bar, (Window.windowWidth/2 - empty_bar_rect.width/2, 180), empty_bar_rect)
+        
+        life_percentage = (DefaultEnemy.currentLife/DefaultEnemy.maxLife)
+        full_bar = pygame.image.load("bar_full.png")
+        full_bar_rect = full_bar.get_rect()
+        Window.screen.blit(full_bar, (Window.windowWidth/2 - full_bar_rect.width/2, 180), (0, 0, life_percentage*full_bar_rect.width, full_bar_rect.height))
             
         pygame.display.flip()
