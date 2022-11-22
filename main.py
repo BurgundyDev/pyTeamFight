@@ -41,27 +41,33 @@ def runBot():
 class Enemy:
     def __init__(self, window) -> None:
         self.maxLife = int(input("Max enemy life: "))
+        self.maxLife = 2000
         self.currentLife = self.maxLife
         self.enemySprite = pygame.image.load(input("Relative path to enemy sprite: "))
+        self.enemySprite = pygame.image.load("pezerus.png")
+        self.title = input("Enemy name: ")
         self.enemyRect = self.enemySprite.get_rect()
-        self.enemyPosition = width, height = 80, (window.windowSize[1]/2 - self.enemyRect.height/2)
+        self.enemyPosition = width, height = Window.windowWidth/2 - self.enemyRect.width/2, window.windowSize[1]/2 - self.enemyRect.height/2 + 180
 
     
 class WindowProperties:
     windowSize = width, height = 1920, 1080
     windowWidth = windowSize[0]
     windowHeight = windowSize[1]
-    healthSizeRatio = 720
     
     def __init__(self) -> None:
         self.background = pygame.image.load(input("Relative path to background: "))
         self.screen = pygame.display.set_mode(self.windowSize)
 
 pygame.init()
+pygame.font.init()
 
 Window = WindowProperties()
 
 DefaultEnemy = Enemy(Window)
+
+title_font = pygame.font.Font(input("Relative path to font: "), 128)
+title = title_font.render(DefaultEnemy.title, True, (255, 255, 255))
 
 def subtractLife(currentLife, damage):
     currentLife = currentLife - damage
@@ -71,17 +77,17 @@ def subtractLife(currentLife, damage):
 @tree.command(name = "dmg", description= "Damage the enemy", guild = guild)
 async def dmg(interaction: discord.Interaction, damage: int):
     DefaultEnemy.currentLife = DefaultEnemy.currentLife - damage
-    await interaction.response.send_message(f"{damage} damage has been dealt to the enemy.")
+    await interaction.response.send_message(f"{damage} damage has been dealt to the enemy. {DefaultEnemy.currentLife}/{DefaultEnemy.maxLife}")
 
 @tree.command(name = "restart", description= "Restart the game given a set of parameters.", guild = guild)
 async def restart(interaction: discord.Interaction, current_life: int, max_life: int):
     DefaultEnemy.maxLife = max_life
     DefaultEnemy.currentLife = current_life
-    await interaction.response.send_message("Restarted game with given parameters")
+    await interaction.response.send_message("Restarted game with given parameters.")
     
 threading.Thread(target=runBot, daemon=True).start()
     
-while 1:
+while (DefaultEnemy.currentLife>0):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -97,11 +103,12 @@ while 1:
             
         # Draw our enemy
         Window.screen.blit(DefaultEnemy.enemySprite, DefaultEnemy.enemyPosition, DefaultEnemy.enemyRect)
+        Window.screen.blit(title, (Window.windowWidth/2 - title.get_rect().width/2, 40))
             
             # draw our enemy's health bar
-        healthBG = 40, 40, 40
-        healthFG = 155, 0, 0
-        pygame.draw.rect(Window.screen, healthBG, (Window.healthSizeRatio/2 + DefaultEnemy.enemyRect.width/1.5, (Window.windowSize[1]/2 - 48), Window.healthSizeRatio, Window.healthSizeRatio/7.5))
-        pygame.draw.rect(Window.screen, healthFG, (Window.healthSizeRatio/2 + DefaultEnemy.enemyRect.width/1.5 + Window.healthSizeRatio/60, (Window.windowSize[1]/2 - Window.healthSizeRatio/20), (DefaultEnemy.currentLife/DefaultEnemy.maxLife) * (Window.healthSizeRatio - Window.healthSizeRatio/30), 72))
+        healthBG = 120, 120, 120
+        healthFG = 188, 0, 0
+        pygame.draw.rect(Window.screen, healthBG, (80, 220, Window.windowWidth - 160, 96))
+        pygame.draw.rect(Window.screen, healthFG, (92, 232, (DefaultEnemy.currentLife/DefaultEnemy.maxLife) * (Window.windowWidth - 184), 72))
             
         pygame.display.flip()

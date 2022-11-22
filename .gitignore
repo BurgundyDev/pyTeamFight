@@ -139,3 +139,7 @@ key.txt
 
 # File in which to store a guild token for command sync
 guild.txt
+
+# Fonts
+**.ttf
+**.otf
