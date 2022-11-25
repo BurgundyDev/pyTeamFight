@@ -45,7 +45,7 @@ class Enemy:
         self.enemySprite = pygame.image.load(input("Relative path to enemy sprite: "))
         self.title = input("Enemy name: ")
         self.enemyRect = self.enemySprite.get_rect()
-        self.enemyPosition = width, height = Window.windowWidth/2 - self.enemyRect.width/2, window.windowSize[1]/2 - self.enemyRect.height/2 + 160
+        self.enemyPosition = width, height = Window.windowWidth/2 - self.enemyRect.width/2, window.windowSize[1]/2 - self.enemyRect.height/2
 
     
 class WindowProperties:
@@ -64,7 +64,7 @@ Window = WindowProperties()
 
 DefaultEnemy = Enemy(Window)
 
-title_font = pygame.font.Font(input("Relative path to font: "), 96)
+title_font = pygame.font.Font(input("Relative path to font: "), 82)
 title = title_font.render(DefaultEnemy.title, True, (255, 255, 255))
 
 def subtractLife(currentLife, damage):
@@ -101,15 +101,15 @@ while (DefaultEnemy.currentLife>0):
             
         # Draw our enemy
         Window.screen.blit(DefaultEnemy.enemySprite, DefaultEnemy.enemyPosition, DefaultEnemy.enemyRect)
-        Window.screen.blit(title, (Window.windowWidth/2 - title.get_rect().width/2, 40))
+        Window.screen.blit(title, (Window.windowWidth/2 - title.get_rect().width/2, 30))
         
         empty_bar = pygame.image.load("bar_empty.png")
         empty_bar_rect = empty_bar.get_rect()
-        Window.screen.blit(empty_bar, (Window.windowWidth/2 - empty_bar_rect.width/2, 180), empty_bar_rect)
+        Window.screen.blit(empty_bar, (Window.windowWidth/2 - empty_bar_rect.width/2, 120), empty_bar_rect)
         
         life_percentage = (DefaultEnemy.currentLife/DefaultEnemy.maxLife)
         full_bar = pygame.image.load("bar_full.png")
         full_bar_rect = full_bar.get_rect()
-        Window.screen.blit(full_bar, (Window.windowWidth/2 - full_bar_rect.width/2, 180), (0, 0, life_percentage*full_bar_rect.width, full_bar_rect.height))
+        Window.screen.blit(full_bar, (Window.windowWidth/2 - full_bar_rect.width/2, 120), (0, 0, life_percentage*full_bar_rect.width, full_bar_rect.height))
             
         pygame.display.flip()
